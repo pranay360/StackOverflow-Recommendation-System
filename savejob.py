@@ -4,6 +4,7 @@ from sklearn.svm import LinearSVC
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfTransformer
+from sklearn.preprocessing import MultiLabelBinarizer
 tags={}
 freq=[]
 count=0
@@ -15,7 +16,7 @@ Y = [[] for i in range(len(X))]
 classifier = Pipeline([
 		     ('vectorizer', CountVectorizer()),
 		     ('tfidf', TfidfTransformer()),
-		     ('clf', OneVsRestClassifier(LinearSVC(class_weight='auto'), n_jobs = -2))])
+		     ('clf', OneVsRestClassifier(LinearSVC(), n_jobs = -2))])
 for line in tagrows:
 	for tag in line.split():
 		if tag in tags:
@@ -36,5 +37,9 @@ for x,tag in enumerate(freq):
 		if tag in row.split():
 			Y[i].append(tag)
 		i=i+1
+
+multibin=MultiLabelBinarizer()
+Y=multibin.fit_transform(Y)
 classifier.fit(X,Y)
 job = joblib.dump(classifier, 'clf.txt', compress=9)
+job = joblib.dump(multibin, 'multibin.txt', compress=9)
